@@ -1,11 +1,13 @@
 import React from 'react'
 import axios from 'axios'
+import NavBar from '../components/navbar'
 import {Button,Modal, Table, Card, Form} from 'react-bootstrap' 
 
 class Pegawai extends React.Component {
     constructor() {  
         super();  
         this.state = {
+            token: "",
             pegawai: [],
             id_pegawai: "",  
             nama_pegawai: "",  
@@ -14,7 +16,22 @@ class Pegawai extends React.Component {
             action: "", 
           isModal10open: false
         }  
+        if (localStorage.getItem("token")) {
+          this.state.token = localStorage.getItem("token")
+      } else {
+          window.location = "/login"
+      }
+
+      this.headerConfig.bind(this) 
     }
+
+    headerConfig = () => {
+      let header = {
+          headers: { Authorization: `Bearer ${this.state.token}` }
+      }
+      return header
+  }
+
     bind = (event) => {
         this.setState({[event.target.name]: event.target.value});
     }
@@ -44,7 +61,7 @@ class Pegawai extends React.Component {
     getPegawai = () => {
         let url = "http://localhost:2910/pegawai";
         // mengakses api untuk mengambil data pegawai
-        axios.get(url)
+        axios.get(url, this.headerConfig())
         .then(response => {
           // mengisikan data dari respon API ke array pegawai
           this.setState({pegawai: response.data.pegawai});
@@ -62,7 +79,7 @@ class Pegawai extends React.Component {
           }
           // mengakses api untuk mengambil data pegawai
           // berdasarkan keyword
-          axios.post(url, form)
+          axios.post(url, form, this.headerConfig())
           .then(response => {
             // mengisikan data dari respon API ke array pegawai
             this.setState({pegawai: response.data.pegawai});
@@ -90,7 +107,7 @@ class Pegawai extends React.Component {
         }
     
         // mengirim data ke API untuk disimpan pada database
-        axios.post(url, form)
+        axios.post(url, form, this.headerConfig())
         .then(response => {
           // jika proses simpan berhasil, memanggil data yang terbaru
           this.getPegawai();
@@ -111,7 +128,7 @@ class Pegawai extends React.Component {
         let url = "http://localhost:2910/pegawai/" + id_pegawai;
         // memanggil url API untuk menghapus data pada database
         if (window.confirm('Apakah Anda yakin ingin menghapus data ini?')) {
-          axios.delete(url)
+          axios.delete(url, this.headerConfig())
           .then(response => {
             // jika proses hapus data berhasil, memanggil data yang terbaru
             this.getPegawai();
@@ -126,6 +143,7 @@ class Pegawai extends React.Component {
         console.log(this.state.action)
         return(
             <>
+            <NavBar/>
                 <Card>
                 <Card.Header className="card-header bg-info text-white" align={'center'}>Data Pegawai</Card.Header>
                 <Card.Body>
